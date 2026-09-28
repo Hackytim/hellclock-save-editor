@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hell Clock Save Editor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Save editor for Hell Clock: relics, gear, skills, constellations and the Great Bell, with a stats view and Maxroll build import. Runs entirely in your browser.">
+<meta property="og:title" content="Hell Clock Save Editor">
+<meta property="og:description" content="Edit relics, gear, constellations and the Great Bell, see your stats, import Maxroll builds. Runs in your browser.">
+<meta name="theme-color" content="#0f0b0a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23140d0b'/%3E%3Cpath d='M18 10h28M18 54h28M22 10c0 14 20 16 20 22S22 40 22 54M42 10c0 14-20 16-20 22s20 8 20 22' stroke='%23e0b067' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Spectral:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="brand-mark">⧗</span>HELL CLOCK <span>Save Editor</span></div>
+  <div class="save-picker hidden">
+    <button id="folderBtn" class="icon-btn" title="Open another save folder" aria-label="Open another save folder">📁</button>
+    <select id="saveSelect" title="Save file"></select>
+    <button id="reloadBtn" class="icon-btn" title="Reload from disk (discards changes)" aria-label="Reload from disk">⟳</button>
+  </div>
+  <div class="spacer"></div>
+  <button id="newBtn" class="ghost-btn">＋ New relic</button>
+  <button id="importBtn" class="ghost-btn">⇩ Import Maxroll build</button>
+  <button id="saveBtn" class="primary" disabled title="Save to disk (Ctrl+S). Close Hell Clock first."><span class="dot"></span><span id="saveLabel">No save open</span></button>
+  <button id="aboutBtn" class="icon-btn" title="Help and about" aria-label="Help and about">?</button>
+</header>
+
+<section id="welcome" class="welcome"></section>
+
+<main class="layout">
+  <section class="panel reliquary">
+    <div class="panel-head">
+      <h2>The Reliquary</h2>
+      <span id="stashSummary" class="muted small"></span>
+    </div>
+    <div class="search">
+      <input id="stashSearch" type="search" placeholder="Search relics by name or affix…" spellcheck="false">
+    </div>
+    <div id="stashTabs" class="page-chips"></div>
+    <div class="grid-wrap"><div id="stashGrid" class="grid"></div></div>
+    <div class="legend muted small">Drag to move · click to edit · <kbd>Del</kbd> deletes · drop on a page chip to send it there</div>
+  </section>
+
+  <section class="panel character">
+    <div id="charHeader" class="char-card"></div>
+    <nav class="tabs main-tabs">
+      <button data-tab="relics" class="active">Relics</button>
+      <button data-tab="gear">Gear</button>
+      <button data-tab="skills">Skills</button>
+      <button data-tab="const">Constellations</button>
+      <button data-tab="bell">Great Bell</button>
+    </nav>
+    <div id="tab-relics" class="tab-body relics-split">
+      <div class="relics-left">
+        <div id="loadoutTabs" class="loadout-bar"></div>
+        <div class="loadout-grid"><div class="grid-wrap"><div id="loadoutGrid" class="grid"></div></div></div>
+      </div>
+      <div id="editor" class="editor empty"></div>
+    </div>
+    <div id="tab-gear" class="tab-body hidden"></div>
+    <div id="tab-skills" class="tab-body hidden"></div>
+    <div id="tab-const" class="tab-body tree-tab hidden"></div>
+    <div id="tab-bell" class="tab-body tree-tab hidden"></div>
+  </section>
+
+  <section class="panel stats">
+    <div class="panel-head"><h2>Character Stats</h2></div>
+    <div class="stat-loadout" id="statLoadout"></div>
+    <div class="stat-sources" id="statSources"></div>
+    <div class="stat-tools">
+      <input id="statFilter" type="search" placeholder="Filter stats…" spellcheck="false">
+      <label class="toggle"><input type="checkbox" id="statChangedOnly"> Changed only</label>
+    </div>
+    <div id="statsBody" class="stats-body"></div>
+    <p class="muted small footnote">Approximate: stat modifiers from the selected relic loadout, blessed gear, Great Bell and
+      constellations. Skill effects, blessings, devotion bonuses, conditional and temporary bonuses are not included.</p>
+  </section>
+</main>
+
+<div id="tooltip" class="tooltip hidden"></div>
+<div id="toasts" class="toasts"></div>
+
+<dialog id="importDialog" class="dialog">
+  <h2>Import a Maxroll build</h2>
+  <div class="row">
+    <input id="importUrl" type="text" placeholder="https://maxroll.gg/hell-clock/planner/3c5os70i" spellcheck="false">
+    <button id="importFetch" class="accent">Fetch</button>
+  </div>
+  <div id="importBody"></div>
+  <div class="row end">
+    <button id="importCancel">Close</button>
+    <button id="importApply" class="primary" disabled>Import</button>
+  </div>
+</dialog>
+
+<dialog id="newDialog" class="dialog">
+  <h2>Create a relic</h2>
+  <div id="newBody"></div>
+  <div class="row end">
+    <button id="newCancel">Close</button>
+    <button id="newCreate" class="primary">Create</button>
+  </div>
+</dialog>
+
+<dialog id="aboutDialog" class="dialog about">
+  <h2>Hell Clock Save Editor</h2>
+  <div id="aboutBody"></div>
+  <div class="row end"><button id="aboutClose">Close</button></div>
+</dialog>
+
+<div id="loading" class="loading"><div class="spinner"></div><div>Loading game data from Maxroll…</div></div>
+<script type="module" src="app.js"></script>
+</body>
+</html>
