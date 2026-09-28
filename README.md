@@ -1,6 +1,6 @@
 # Hell Clock Save Editor
 
-A save editor for **Hell Clock**, in the spirit of Path of Building. It runs entirely in your browser: nothing to
+A save editor for **Hell Clock**. It runs entirely in your browser: nothing to
 install, and your save never leaves your computer.
 
 **Open it: https://hackytim.github.io/hellclock-save-editor/**
