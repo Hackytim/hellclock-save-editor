@@ -10,8 +10,7 @@
 - **Gear:** blessed gear loadouts (item, variant, roll) and the gear stash.
 - **Skills:** the five skill slots.
 - **Constellations and the Great Bell:** interactive maps using the game's unlock rules, points and devotion.
-- **Stats:** a character sheet computed from relics, gear, the Great Bell and constellations. Differences between
-  loadouts are shown like Path of Building's.
+- **Stats:** a character sheet computed from relics, gear, the Great Bell and constellations.
 - **Maxroll import:** paste a Maxroll planner link and import its relics, skills, gear, constellations and Great Bell.
 
 ## How to use it
